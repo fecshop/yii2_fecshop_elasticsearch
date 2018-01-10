@@ -1,0 +1,36 @@
+{  
+      "name": "fancyecommerce/fecshop_elasticsearch",  
+      "description": "fecshop elasticsearch extension for category, product, search page ",  
+      "keywords": [  
+        "yii2",  
+        "fecshop",
+        "elasticsearch"
+      ],  
+      "homepage": "https://github.com/fecshop/yii2_fecshop_elasticsearch",  
+      "type": "yii2-extension",  
+      "license": "BSD 3-Clause",  
+      "support": {  
+        "source": "https://github.com/fecshop/yii2_fecshop_elasticsearch"  
+      },  
+      "authors": [  
+        {  
+          "name": "terry",  
+          "email": "2358269014@qq.com"  
+        }  
+      ],  
+      "minimum-stability": "stable",  
+      "require": {  
+        "php": ">=5.4.0" 
+      },  
+      "autoload": {  
+        "psr-4": {  
+          "fecshop\\elasticsearch\\": ""  
+        }  
+      },  
+      "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+      ]
+}
