@@ -12,7 +12,7 @@ composer require --prefer-dist fancyecommerce/fecshop_elasticsearch
 or 在根目录的`composer.json`中添加
 
 ```
-"fancyecommerce/fecshop_elasticsearch": "~1.0.1"
+"fancyecommerce/fecshop_elasticsearch": "~1.0.2"
 
 ```
 
