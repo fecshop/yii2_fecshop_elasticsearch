@@ -51,20 +51,20 @@ composer update
 
 ### 配置
 
-1.添加配置
+1.添加当前扩展的配置到fecshop
 
-将 ./config/fecshop_elasticsearch.php文件复制到 common/config/fecshop_third_extensions/下面
+将 vendor/fancyecommerce/fecshop_elasticsearch/config/fecshop_elasticsearch.php文件复制到 common/config/fecshop_third_extensions/下面
 ，然后打开这个文件
 
-1.1在 `nodes` 处配置ip和port
+1.1在 `nodes` 处配置`ip`和`port`
 
 1.2在`searchLang`处，配置支持的语言，也就是把您的网站的语言都填写过来，那么，这些语言就会使用
-elasticSearch搜索。 
+`elasticSearch`搜索。 
 
 
-2.关闭mongodb和xunsearch搜索
+2.将mongodb和xunsearch搜索的语言改为elasticSearch
 
-打开文件 common/config/fecshop_local_services/Search.php
+打开文件 `common/config/fecshop_local_services/Search.php`
 
 将 mongodb 和 xunsearch 部分的搜索语言部分注释掉，
 如果您想要某些语言继续使用mongodb或xunsearch搜索，那么可以保留某些语言，
