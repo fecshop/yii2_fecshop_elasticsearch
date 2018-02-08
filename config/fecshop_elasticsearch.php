@@ -28,10 +28,44 @@ return [
                             // configure more hosts if you have a cluster
                         ],
                     ],
-                ]
+                ], 
+                'services' => [
+                    'search' => [
+                        'childService' => [
+                            'elasticSearch'  => [
+                                'class'        => 'fecshop\elasticsearch\services\search\ElasticSearch',
+                                'enableService'        => true,
+                                'searchLang'  => [
+                                    'en' => 'english',
+                                    'fr' => 'french',
+                                    'de' => 'german',
+                                    'es' => 'spanish',
+                                    'ru' => 'russian',
+                                    'pt' => 'portuguese',
+                                    'zh' => 'chinese',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        
+        
+        'console' => [
+            // 在公用层的开关，设置成false后，公用层的配置将失效
+            'enable' => true,
+            // 公用层的具体配置下载下面
+            'config' => [
+                'controllerMap'=>[  
+                    'elasticsearch'=>[  
+                        'class'=>'fecshop\elasticsearch\controllers\ElasticsearchController'  
+                    ],  
+                ],
 
             ],
         ],
+        
         
         
     ],
