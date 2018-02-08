@@ -20,7 +20,7 @@
       ],  
       "minimum-stability": "stable",  
       "require": {  
-        "php": ">=5.4.0" 
+        "yiisoft/yii2-elasticsearch": "~2.0.0"
       },  
       "autoload": {  
         "psr-4": {  
