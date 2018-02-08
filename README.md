@@ -40,7 +40,7 @@ composer update
 
 由于扩展不支持es6，因此对其进行了改动
 
-1. composer.json`中添加
+1. `composer.json`中添加
 `"yiisoft/yii2-elasticsearch": "2.1@dev",`
 ,然后执行`composer update`
 
