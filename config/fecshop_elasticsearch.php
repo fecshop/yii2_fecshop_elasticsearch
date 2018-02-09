@@ -24,6 +24,7 @@ return [
                     'elasticsearch' => [
                         'class' => 'yii\elasticsearch\Connection',
                         'nodes' => [
+                            // 配置elasticSearch的ip和host
                             ['http_address' => '127.0.0.1:9200'],
                             // configure more hosts if you have a cluster
                         ],
@@ -35,6 +36,7 @@ return [
                             'elasticSearch'  => [
                                 'class'        => 'fecshop\elasticsearch\services\search\ElasticSearch',
                                 'enableService'        => true,
+                                // 下面这些语言将使用Es搜索引擎，当然，您需要在其他的搜索引擎中剔除下面的搜索语言
                                 'searchLang'  => [
                                     'en' => 'english',
                                     'fr' => 'french',

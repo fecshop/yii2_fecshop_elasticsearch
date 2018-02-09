@@ -15,7 +15,7 @@ http://www.fecshop.com/topic/672
 http://www.fecshop.com/topic/668
 
 
-### 安装fecshop elasticSearch扩展
+### 安装fecshop elasticSearch扩展，也就是本扩展
 
 1.安装
 
@@ -26,7 +26,7 @@ composer require --prefer-dist fancyecommerce/fecshop_elasticsearch
 or 在根目录的`composer.json`中添加
 
 ```
-"fancyecommerce/fecshop_elasticsearch": "~1.xx"  // 使用最新版本号  
+"fancyecommerce/fecshop_elasticsearch": "~1.xx"  // 使用最新版本号 ，在这里查看：https://github.com/fecshop/yii2_fecshop_elasticsearch/releases 
 
 ```
 
@@ -36,9 +36,9 @@ or 在根目录的`composer.json`中添加
 composer update
 ```
 
-### yii2-elasticSearch 不支持es6的处理
+### yii2-elasticSearch 不支持 ElasticSearch6的处理，会有问题，而且yii2项目组好像很忙：https://github.com/yiisoft/yii2-elasticsearch/issues/167#issuecomment-364055614
 
-由于扩展不支持es6，因此对其进行了改动
+因此对其进行了略微改动（比较粗暴的改动，仅支持本插件）
 
 1.在根目录`composer.json`中添加
 `"yiisoft/yii2-elasticsearch": "2.1@dev",`
@@ -47,16 +47,16 @@ composer update
 2.更新后，然后将 vendor/fancyecommerce/fecshop_elasticsearch/yii2-elasticSearch
 下的三个php文件覆盖到`/vendor/yiisoft/yii2-elasticsearch` 下即可
 
-3.如果yii2-elasticSearch 支持es6，修复了这个文件，此处将不需要执行（这个只能等官方了）
+3.当yii2-elasticSearch 项目组修复了这个问题后，此处将不需要执行（这个只能等官方了）
 
 ### 配置
 
 1.添加当前扩展的配置到fecshop
 
-将 vendor/fancyecommerce/fecshop_elasticsearch/config/fecshop_elasticsearch.php文件复制到 common/config/fecshop_third_extensions/下面
+将 `vendor/fancyecommerce/fecshop_elasticsearch/config/fecshop_elasticsearch.php`文件复制到 `common/config/fecshop_third_extensions/`下面
 ，然后打开这个文件
 
-1.1在 `nodes` 处配置`ip`和`port`
+1.1在 `nodes` 处配置`ip`和`port`,配置ES的连接
 
 1.2在`searchLang`处，配置支持的语言，也就是把您的网站的语言都填写过来，那么，这些语言就会使用
 `elasticSearch`搜索。 
@@ -96,27 +96,37 @@ composer update
 
 fecshop 根目录下执行
 
-3.1新建elasticSearch的mapping
+3.1、新建elasticSearch的mapping（必须执行）
 
 ```
 ./yii elasticsearch/updatemapping
 ```
 
-3.2删除es的产品index（当您的mapping中的某个字段需要修改，直接修改是无效的，只能删除index库，然后重建）
+3.2、删除es的产品index（当您的mapping中的某个字段需要修改，直接修改是无效的，只能删除index库，然后重建）
 
 ```
 ./yii elasticsearch/clean
 ```
 
-3.3同步产品到elasticSearch
+3.3、同步产品到elasticSearch（必须执行）
 
 ```
 cd vendor/fancyecommerce/fecshop/shell/search/
 sh fullSearchSync.sh
 ```
 
-3.4然后，es部分就可以访问了
+3.4、然后，es部分就可以访问了
 
+3.5、当您的产品信息有改动的时候，产品保存的时候，会自动同步到ES的
+
+### 扩展
+
+
+搜索的model路径为： `vendor/fancyecommerce/fecshop_elasticsearch/models/elasticSearch/Product.php`
+，如果您想更改里面的内容，您可以重写这个model，进行更改，
+重写model可以参看：
+
+[通过rewriteMap进行重写Block Model 层](http://www.fecshop.com/doc/fecshop-guide/develop/cn-1.0/guide-fecshop-rewrite-func.html#8rewritemapblock-model)
 
 
 ### 备注
@@ -143,6 +153,7 @@ https://github.com/fecshop/yii2_fecshop_elasticsearch/blob/master/models/elastic
 'br' => 'brazilian', 
 ```
 
+Es6默认就支持的analysis，详细参看：https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
 
 2.产品搜索index
 

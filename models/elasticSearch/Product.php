@@ -22,6 +22,8 @@ class Product extends ActiveRecord
     protected static $_lang_analysis;
     /**
      * 配置数组，语言简码 和 对应的es分词器名称analysis
+     * 主流语言都已经配置，如果您想配置其他的语言，自行添加analysis
+     * 详细参看：https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
      */
     public static $langAnalysis = [
             'zh' => 'cjk', // 中国
@@ -77,7 +79,7 @@ class Product extends ActiveRecord
 	}
     
     /**
-     * index ， 有一点类似数据库的index
+     * index ， 有一点类似数据库的db，但完全不是一个概念
      */
 	public static function index()
 	{
@@ -100,6 +102,10 @@ class Product extends ActiveRecord
     }
 	/**
      * elasticsearch map config
+     * 关于elasticSearch的mapping，参看：https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+     * 下面是fecshop默认添加的mapping，如果您想添加其他字段的mapping，
+       在return函数中自行添加，
+       因为
      */
 	public static function mapConfig($noAnalysis = false){
         if ($noAnalysis) {

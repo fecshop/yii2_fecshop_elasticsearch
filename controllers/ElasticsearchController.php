@@ -21,13 +21,13 @@ class ElasticsearchController extends Controller
     protected $_numPerPage = 50;
 
     /**
-     * Í¨¹ı½Å±¾£¬°Ñ²úÆ·µÄÏàÓ¦ÓïÑÔĞÅÏ¢Ìí¼Óµ½ÏàÓ¦µÄĞÂ±íÖĞ¡£
-     * È»ºóÔÚÏàÓ¦ÓïÑÔËÑË÷µÄÊ±ºò£¬×Ô¶¯È¥ÏàÓ¦µÄ±íÖĞ²éÊı¾İ¡£
-     * ÎªÊ²Ã´ĞèÒª¸ãÕâÃ´¶à±íÄØ?ÒòÎªmongodbµÄÈ«ÎÄËÑË÷£¨fullSearch£©Ë÷Òı£¬ÔÚÒ»¸ö±íÖĞÖ»ÄÜÓĞÒ»¸ö¡£
-     * Õâ¸öË÷Òı¿ÉÒÔÊÇ¶à¸ö×Ö¶ÎµÄ×éºÏË÷Òı£¬
-     * Òò´Ë£¬¶ÔÓÚ¶àÓïÑÔµÄ²úÆ·ËÑË÷¾ÍĞèÒª¸ã¼¸¸ö±íÁË¡£
-     * ÏÂÃæµÄ¹¦ÄÜ£º
-     * 1. ½«²úÆ·µÄname description  price img score sku  spuµÈĞÅÏ¢¸üĞÂ¹ıÀ´¡£
+     * é€šè¿‡è„šæœ¬ï¼ŒæŠŠäº§å“çš„ç›¸åº”è¯­è¨€ä¿¡æ¯æ·»åŠ åˆ°ç›¸åº”çš„æ–°è¡¨ä¸­ã€‚
+     * ç„¶ååœ¨ç›¸åº”è¯­è¨€æœç´¢çš„æ—¶å€™ï¼Œè‡ªåŠ¨å»ç›¸åº”çš„è¡¨ä¸­æŸ¥æ•°æ®ã€‚
+     * ä¸ºä»€ä¹ˆéœ€è¦æè¿™ä¹ˆå¤šè¡¨å‘¢?å› ä¸ºmongodbçš„å…¨æ–‡æœç´¢ï¼ˆfullSearchï¼‰ç´¢å¼•ï¼Œåœ¨ä¸€ä¸ªè¡¨ä¸­åªèƒ½æœ‰ä¸€ä¸ªã€‚
+     * è¿™ä¸ªç´¢å¼•å¯ä»¥æ˜¯å¤šä¸ªå­—æ®µçš„ç»„åˆç´¢å¼•ï¼Œ
+     * å› æ­¤ï¼Œå¯¹äºå¤šè¯­è¨€çš„äº§å“æœç´¢å°±éœ€è¦æå‡ ä¸ªè¡¨äº†ã€‚
+     * ä¸‹é¢çš„åŠŸèƒ½ï¼š
+     * 1. å°†äº§å“çš„name description  price img score sku  spuç­‰ä¿¡æ¯æ›´æ–°è¿‡æ¥ã€‚
 
      */
     public function actionSyncproduct($pageNum)
@@ -92,14 +92,14 @@ class ElasticsearchController extends Controller
             }
         }
     }
-    
+    // æ¸…ç©ºesä¸­çš„äº§å“
     public function actionClean(){
         Yii::$service->search->elasticSearch->esDeleteAllProduct();
         
     }
 
     /**
-     * µÃµ½²úÆ·µÄ×ÜÊı¡£
+     * å¾—åˆ°äº§å“çš„æ€»æ•°ã€‚
      */
     public function actionProductcount()
     {
@@ -112,7 +112,7 @@ class ElasticsearchController extends Controller
         $count = Yii::$service->product->collCount($filter);
         echo ceil($count / $this->_numPerPage);
     }
-    
+    // æ›´æ–°esçš„mapping
     public function actionUpdatemapping(){
         Yii::$service->search->elasticSearch->updateMapping();
         

@@ -9,8 +9,7 @@
 
 namespace fecshop\elasticsearch\services\search;
 
-//use fecshop\models\mongodb\Product;
-//use fecshop\models\xunsearch\Search as XunSearchModel;
+use fecshop\services\search\SearchInterface;
 use fecshop\services\Service;
 use Yii;
 
@@ -19,17 +18,24 @@ use Yii;
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class ElasticSearch extends Service implements \fecshop\services\search\SearchInterface
+class ElasticSearch extends Service implements SearchInterface
 {
-    public $searchIndexConfig;
+    // Es搜索引擎支持的语言，也就是那些语言，使用Es搜索引擎。
     public $searchLang;
-    public $fuzzy = false;
-    public $synonyms = false;
+    // 匹配类型，目前使用的是 cross_fields, 其他的搜索类型详细，您可以参看: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html#multi-match-types
+    public $type = 'cross_fields';
+    // 产品model
     protected $_productModelName = '\fecshop\models\mongodb\Product';
     protected $_productModel;
+    // Es Product model
     protected $_searchModelName  = '\fecshop\elasticsearch\models\elasticSearch\Product';
     protected $_searchModel;
     
+    /**
+     * Es不同于Mongo等，他可以一次将搜索的产品列表，以及聚合属性以及属性的count，一次计算出来
+     * 因此，在产品产品的函数中，就把聚合数据计算出来，存放到该变量
+     * 后面的函数取聚合数据，直接从这个变量中取出来即可。
+     */
     public $filter_values;
     
     public function init()
@@ -39,7 +45,7 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
         list($this->_searchModelName,$this->_searchModel) = \Yii::mapGet($this->_searchModelName); 
     }
     /**
-     * 初始化索引.
+     * Mongodb初始化索引.Es不需要该函数，Es只需要新建mapping就可以了。
      */
     protected function actionInitFullSearchIndex()
     {
@@ -97,7 +103,8 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
         
         return true;
     }
-
+    
+    // 废弃
     protected function actionDeleteNotActiveProduct($nowTimeStamp)
     {
     }
@@ -114,38 +121,31 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
             foreach ($this->searchLang as $langCode => $langName) {
                 $this->_searchModel::initLang($langCode);
                 $this->_searchModel::deleteIndex();
-                
-                /**
-                 * $EsSearchData = $this->_searchModel->find()
-                 *     ->limit($numPerPage)  
-                 *     ->offset(($i - 1) * $numPerPage)
-                 *     ->all();
-                 * foreach ($EsSearchData as $one) {
-                 *     $one->delete();
-                 * }
-                 */
             }
         }
     }
 
-    /** 未
+    /** 
+     * @property $select | Array ， 搜索的字段
+     * @property $where | Array ，搜索的条件
+     * @property $pageNum | 页数
+     * @property $numPerPage | 每页的产品数
+     * @property $product_search_max_count | int ，最大搜索的个数，搜索引擎是没有分页概念的，只有一次查出来所有结果，因此需要限制搜索的最大数
+     * @property $filterAttr | Array，聚合的字段
      * 得到搜索的产品列表.
      */
     protected function actionGetSearchProductColl($select, $where, $pageNum, $numPerPage, $product_search_max_count, $filterAttr)
     {
         $collection = $this->fullTearchText($select, $where, $pageNum, $numPerPage, $product_search_max_count, $filterAttr);
-
         $collection['coll'] = Yii::$service->category->product->convertToCategoryInfo($collection['coll']);
-        //var_dump($collection);
-        //exit;
+        
         return $collection;
     }
     /**
-     *  未
+     *  全文索引，参数这里不一一介绍，和函数 actionGetSearchProductColl的参数是一样的
      */
     protected function fullTearchText($select, $where, $pageNum, $numPerPage, $product_search_max_count, $filter_attrs)
     {
-        //$filter_attrs[] = 'spu';
         $lang = Yii::$service->store->currentLangCode;
         $this->_searchModel->initLang($lang);
         $searchText = $where['$text']['$search'];
@@ -168,31 +168,13 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
                         [
                             'multi_match' => [
                                 'query'     => $where['$text']['$search'],
-                                //'type'      => '',  //default  best_fields, see: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html#multi-match-types
-                                'fields'    =>    [ "name^10", "description^4" ],  // ^后面是这个属性的权重。 see: https://www.elastic.co/guide/en/elasticsearch/guide/current/multi-match-query.html#_boosting_individual_fields
+                                'type'      => $this->type,  //default  best_fields, see: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html#multi-match-types
+                                'fields'    =>    [ "name^4", "description^2" ],  // ^后面是这个属性的权重。 see: https://www.elastic.co/guide/en/elasticsearch/guide/current/multi-match-query.html#_boosting_individual_fields
                                 'operator'  =>  'and',
                                 'tie_breaker' => 0.3 ,
                                 //"minimum_should_match" => "0%",
                             ],
                         ]
-                        /*
-                        [
-                            'match' => [
-                                'name' => [
-                                    'query' => $where['$text']['$search'],
-                                    'boost' => 2, // 搜索权重
-                                ]
-                            ]
-                        ],
-                        [
-                            'match' => [
-                                'description' => [
-                                    'query' => $where['$text']['$search'],
-                                    'boost' => 1, // 搜索权重
-                                ]
-                            ]
-                        ],
-                        */
                     ];
                 } else {
                     return [];
@@ -215,18 +197,13 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
                                 'term' => [$k => $v]
                             ];
                         }
-                        
                     }
                 }
                 if (!empty($queryMust)) {
                     $query_arr['bool']['filter'] = $queryMust;
                 }
             }
-            //var_dump($query_arr);
             $searchQuery = $this->_searchModel->find()->asArray()->query($query_arr);
-            
-            // 侧栏过滤的属性。
-            //$filter_attrs = ['price'];
             // 设置最大查询数
             $size = $product_search_max_count;  // 5000;
             // 设置aggregate部分
@@ -240,17 +217,7 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
             }
             // 得到查询结果
             $search_data = $searchQuery->createCommand()->search();
-            //var_dump($search_data);
-            /*
-            $data = $this->_searchModel->find()
-                            ->asArray()
-                            ->query($query_arr)
-                            ->addAgg($name, $type, $options)
-                            ->createCommand()
-                            ->search();
-            */
-            
-            // aggregate 部分，得到过滤的部分。
+            // 根据上面的查询结果，得到过滤的部分 - aggregate 部分，。
             $agg_data = $search_data['aggregations'];
             if (is_array($agg_data)) {
                 foreach ($agg_data as $f_attr => $filter) {
@@ -270,8 +237,7 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
                     $this->filter_values[$f_attr] = $arr;
                 }
             }
-            // var_dump($this->filter_values);
-            // 产品数据部分
+            // 根据上面的查询结果，得到产品数据部分
             $productData = [];
             if (is_array($search_data['hits']['hits'])) {
                 foreach ($search_data['hits']['hits'] as $one) {
@@ -328,13 +294,16 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
             ];
         }
     }
-
-    /** 未
-     * 得到搜索的sku列表侧栏的过滤.
-     $count_arr[] = [
-                    '_id' => $k,
-                    'count' => $v,
-                ];
+    /** 
+     * @property $filter_attr | string  ， 聚合的属性字段
+     * @property $where | Array ， 查询条件
+     * @return Array， 得到搜索的sku列表侧栏的过滤.example：
+     * [
+     *        [ '_id' => $k, 'count' => $v,],
+     *        [ '_id' => $k, 'count' => $v,],
+     *        [ '_id' => $k, 'count' => $v,],
+     * ]
+     * 下面的$this->filter_values，该类变量在上面的查询中已经被初始化，这里直接调用即可。
      */
     protected function actionGetFrontSearchFilter($filter_attr, $where)
     {
@@ -343,129 +312,10 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
         } else {
             return [];
         }
-        /*
-        return [];
-        $lang = Yii::$service->store->currentLangCode;
-        $this->_searchModel->initLang($lang);
-        $searchText = $where['$text']['$search'];
-        if (!$searchText) {
-            return [];
-        }
-        $query_arr = [];
-        if (is_array($where) && !empty($where)) {
-            if (isset($where['$text']['$search']) && $where['$text']['$search']) {
-                $query_arr['bool']['should'] = [
-                    [
-                        'match' => [
-                            'name' => [
-                                'query' => $where['$text']['$search'],
-                                'boost' => 2, // 搜索权重
-                            ]
-                        ]
-                    ],
-                    [
-                        'match' => [
-                            'description' => [
-                                'query' => $where['$text']['$search'],
-                                'boost' => 1, // 搜索权重
-                            ]
-                        ]
-                    ],
-                ];
-            } else {
-                return [];
-            }
-            $queryMust = [];
-            foreach ($where as $k => $v) {
-                if ($k != '$text') {
-                    $queryMust[] = [
-                        'match' => [$k => $v]
-                    ];
-                }
-            }
-            if (!empty($queryMust)) {
-                $query_arr['bool']['must'] = $queryMust;
-            }
-        }
-        $filter_attr = 'price';
-        $size = 5000;
-        $name = $filter_attr;
-        $type = 'terms';
-        $options = [
-          'field' => $filter_attr,
-          'size'  => $size,
-        ];
-        $data = $this->_searchModel->find()
-                        ->asArray()
-                        ->query($query_arr)
-                        ->addAgg($name, $type, $options)
-                        ->createCommand()
-                        ->search();
-        $agg_data = $data['aggregations'];
-        
-        
-        
-        var_dump($data);exit;
-        $buckets  = $agg_data[$filter_attr]['buckets'];
-        var_dump($buckets);exit;
-        $country_code_arr = \yii\helpers\BaseArrayHelper::getColumn($buckets,'key');
-        var_dump($country_code_arr);
-        exit;
-        
-        
-        
-        $searchQuery->addStatisticalFacet('sku', ['field' => 'sku']);
-        
-        
-        $data = $searchQuery->search();
-        echo 222;
-        var_dump($data);
-        */
-        
-        /*
-        $productData = [];
-        
-        
-        //var_dump($where);
-        $dbName = $this->_searchModel->projectName();
-        $_search = Yii::$app->xunsearch->getDatabase($dbName)->getSearch();
-        $text = isset($where['$text']['$search']) ? $where['$text']['$search'] : '';
-        if (!$text) {
-            return [];
-        }
-        $sh = '';
-        foreach ($where as $k => $v) {
-            if ($k != '$text') {
-                if (!$sh) {
-                    $sh = ' AND '.$k.':'.$v;
-                } else {
-                    $sh .= ' AND '.$k.':'.$v;
-                }
-            }
-        }
-        //echo $sh;
-
-        $docs = $_search->setQuery($text.$sh)
-            ->setFacets([$filter_attr])
-            ->setFuzzy($this->fuzzy)
-            ->setAutoSynonyms($this->synonyms)
-            ->search();
-        $filter_attr_counts = $_search->getFacets($filter_attr);
-        $count_arr = [];
-        if (is_array($filter_attr_counts) && !empty($filter_attr_counts)) {
-            foreach ($filter_attr_counts as $k => $v) {
-                $count_arr[] = [
-                    '_id' => $k,
-                    'count' => $v,
-                ];
-            }
-        }
-
-        return $count_arr;
-        */
     }
 
     /**
+     * @property $product_id | String ，产品id
      * 通过product_id删除搜索数据.
      */
     protected function actionRemoveByProductId($product_id)
@@ -478,7 +328,10 @@ class ElasticSearch extends Service implements \fecshop\services\search\SearchIn
             }
         }
     }
-    
+    /**
+     * 更新ElasticSearch product部分的Mapping
+     * 关于elasticSearch的mapping，参看：https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+     */
     public function updateMapping(){
         if (!empty($this->searchLang) && is_array($this->searchLang)) {
             foreach ($this->searchLang as $langCode => $langName) {
