@@ -36,9 +36,10 @@ or 在根目录的`composer.json`中添加
 composer update
 ```
 
-### yii2-elasticSearch 不支持 ElasticSearch6的处理，会有问题，而且yii2项目组好像很忙：https://github.com/yiisoft/yii2-elasticsearch/issues/167#issuecomment-364055614
+### yii2-elasticSearch 扩展bug处理
 
-因此对其进行了略微改动（比较粗暴的改动，仅支持本插件）
+yii2-elasticSearch目前还不支持 ElasticSearch 6 的处理，会有问题，而且yii2项目组好像很忙：https://github.com/yiisoft/yii2-elasticsearch/issues/167#issuecomment-364055614
+, 因此对其进行了略微改动（比较粗暴的改动，仅支持本插件）
 
 1.在根目录`composer.json`中添加
 `"yiisoft/yii2-elasticsearch": "2.1@dev",`
